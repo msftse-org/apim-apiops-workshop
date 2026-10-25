@@ -4,6 +4,8 @@ A customer workshop using the **real `apiops` command line**. Customers sign in 
 
 Deploy an Orders API to Azure API Management, promote its configuration to QA, change a release and roll it back. Explore extraction, filtering, dependencies, secret redaction, scoped deletion, API Center and pipeline generation.
 
+[Download the Microsoft-themed workshop PowerPoint](docs/presentation/APIM-APIOps-Customer-Workshop.pptx).
+
 ## Start here
 
 Requirements: **Node.js 22+, npm, Azure CLI, Git, jq and curl**. Commands use Bash on macOS/Linux or WSL. Configure a Git name/email for the commit exercises. You do not need Python to follow the labs.

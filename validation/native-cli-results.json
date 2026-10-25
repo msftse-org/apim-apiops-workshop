@@ -1,0 +1,50 @@
+{
+  "validatedOn": "2026-10-25",
+  "path": "Literal native apiops Bash blocks from customer Labs 02\u201310",
+  "package": "@azure-tools/apiops-cli",
+  "version": "1.0.5",
+  "integrity": "sha512-gGCr0wK1aplkr3JbVmxNtCatdsVTfyQbO7IGh3G5RrnL0r84FH0v6bW6Ud1jZM98Ccj9un5YDaoLyGPQulxnXA==",
+  "completed": true,
+  "passedCommandBlocks": [
+    "02-deploy:1",
+    "02-deploy:2",
+    "03-release:1",
+    "03-release:2",
+    "04-overrides:1",
+    "04-overrides:2",
+    "05-filtering:1",
+    "05-filtering:2",
+    "05-filtering:3",
+    "06-guards:1",
+    "06-guards:2",
+    "06-guards:3",
+    "07-api-center:1",
+    "07-api-center:2",
+    "07-api-center:3",
+    "08-cicd:1",
+    "09-cli-utilities:1",
+    "10-validation:1"
+  ],
+  "numberOfPassedBlocks": 18,
+  "observations": {
+    "finalDevRelease": "v1",
+    "finalQaRelease": "v2",
+    "httpStatus": 200,
+    "incrementalChangePuts": 1,
+    "overrideOnlyPuts": 0,
+    "withDependencies": 11,
+    "withoutDependencies": 7,
+    "scopedDeletes": 1,
+    "redactionGuardExit": 2,
+    "filterDeleteGuardExit": 2,
+    "initConflictExit": 1
+  },
+  "scopeLimits": [
+    "Existing APIM Consumption and API Center Free; fresh provisioning not repeated",
+    "Whole-group deletion not executed; reference demo retained",
+    "Interactive az login reused an existing authenticated sandbox session",
+    "No hosted deployment workflow or customer Azure identity configured",
+    "Interactive Copilot, Key Vault, other APIM tiers/protocols and all resource types not tested"
+  ],
+  "installationNote": "Package installation succeeded through the configured npm registry. Direct registry.npmjs.org verification encountered ENOTCONN in the test environment."
+}

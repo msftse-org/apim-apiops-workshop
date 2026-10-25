@@ -31,7 +31,15 @@ apiops publish \
   --resource-group "$RESOURCE_GROUP" \
   --service-name "$APIM_NAME" \
   --source apim-artifacts --overrides configuration.dev.yaml --commit-id "$CHANGE_COMMIT"
-curl --fail-with-body -i "https://$APIM_NAME.azure-api.net/dev/orders/status"
+# Wait for the gateway to serve the requested release.
+for attempt in {1..24}; do
+  curl --fail-with-body --max-time 30 -sS -D response.headers -o response.body \
+    "https://$APIM_NAME.azure-api.net/dev/orders/status"
+  grep -qi "x-demo-release: v2" response.headers && break
+  sleep 5
+done
+grep -qi "x-demo-release: v2" response.headers
+cat response.headers response.body
 curl --fail-with-body -i "https://$APIM_NAME.azure-api.net/qa/orders/status"
 ```
 
@@ -45,7 +53,15 @@ apiops publish \
   --resource-group "$RESOURCE_GROUP" \
   --service-name "$APIM_NAME" \
   --source apim-artifacts --overrides configuration.dev.yaml --commit-id "$ROLLBACK_COMMIT"
-curl --fail-with-body -i "https://$APIM_NAME.azure-api.net/dev/orders/status"
+# Wait for the gateway to serve the requested release.
+for attempt in {1..24}; do
+  curl --fail-with-body --max-time 30 -sS -D response.headers -o response.body \
+    "https://$APIM_NAME.azure-api.net/dev/orders/status"
+  grep -qi "x-demo-release: v1" response.headers && break
+  sleep 5
+done
+grep -qi "x-demo-release: v1" response.headers
+cat response.headers response.body
 cd "$WORKSHOP_ROOT"
 ```
 
