@@ -6,6 +6,50 @@ Deploy an Orders API to Azure API Management, promote its configuration to QA, c
 
 [Download the Microsoft-themed workshop PowerPoint](docs/presentation/APIM-APIOps-Customer-Workshop.pptx).
 
+[Start the workshop](#start-here) · [Architecture](#architecture) · [Lab index](#workshop-path)
+
+## Architecture
+
+The workshop runs from **your workstation into your Azure subscription**. Git stores the configuration; the native `apiops` CLI reads or changes Azure resources using your authenticated identity.
+
+[![APIM APIOps architecture: customer workstation and identity, separate APIM and API Center configuration flows, and the live status and echo request paths](docs/images/apim-apiops-architecture.png)](docs/images/apim-apiops-architecture.png)
+
+| Boundary | What runs here | Why it matters |
+|---|---|---|
+| Your workstation | Azure CLI login, native `apiops`, Git, curl and jq | You select the tenant, subscription and resource names in your local `.env`. |
+| Your Azure resource group | APIM Consumption and API Center Free | Azure CLI provisions resources; APIOps manages their configuration. |
+| APIM gateway | `/dev/orders` and `/qa/orders` | Shared artifacts plus overrides create two namespaces on **one gateway**, not two isolated environments. |
+| API Center | API metadata, versions, definitions and specifications | A separate catalog exercise. These labs do not configure automatic synchronization from APIM. |
+| Public GitHub repository | Workshop files, content checks and code analysis | It has no Azure deployment identity or configured deployment workflow. |
+
+**Two kinds of traffic:** dashed blue arrows show configuration reads/writes. Solid teal arrows show live API requests. `GET /{dev|qa}/orders/status` returns synthetic JSON directly from an operation policy. `GET /{dev|qa}/orders/echo` rewrites to `/get` on the public `httpbin.org` backend. Status sets its response headers directly; echo uses the shared outbound header fragment.
+
+The diagram repeats the gateway in the runtime row to show its request path; it is the same APIM service. Authentication uses the CLI's `DefaultAzureCredential` chain. The labs use your Azure CLI session; review other configured credentials if the active identity is unexpected.
+
+## Command flow and deep dive
+
+[![Native APIOps command lifecycle with authentication, artifacts, dry run, deployment, verification and rollback, plus filtering, safeguards, API Center and pipeline generation](docs/images/apim-apiops-command-flow.png)](docs/images/apim-apiops-command-flow.png)
+
+The image shows **command fragments**. Use the linked labs for complete commands, target flags and assertions.
+
+| Flow | Native command or option | What the lab proves |
+|---|---|---|
+| Prepare and deploy | `apiops publish --dry-run`, then `apiops publish --overrides …` | [Lab 02](docs/labs/02-deploy.md): shared files deploy dev and QA. |
+| Change and recover | `--commit-id`, `git revert`, publish the revert commit | [Lab 03](docs/labs/03-release.md): dev v1 → v2 → v1; QA stays v2. Wait for gateway propagation before asserting results. |
+| Environment configuration | `--overrides` | [Lab 04](docs/labs/04-overrides.md): prefixes and values change per target. An override-only commit needs a full publish. |
+| Read selected resources | `apiops extract --filter …`, `--no-transitive` | [Lab 05](docs/labs/05-filtering.md): dependency expansion, exact selection, wildcards and exclusions. |
+| Handle secrets and removal | Redaction checks, `--delete-unmatched`, `--remove-stale` | [Lab 06](docs/labs/06-guards.md): blocked redacted publish, one commit-scoped remote deletion, then stale local-file removal. |
+| Back up the catalog | `apiops apic extract`, `apiops apic publish`, `--no-specifications` | [Lab 07](docs/labs/07-api-center.md): catalog replay with or without specification files. |
+| Generate automation examples | `apiops init --ci …`, `--force` | [Lab 08](docs/labs/08-cicd.md): local GitHub Actions/Azure DevOps files and Copilot prompts. Connecting a pipeline to Azure is a separate customer decision. |
+| Inspect and verify | `--format json`, `--log-level`, `curl`, `jq` | [Labs 09–10](docs/labs/09-cli-utilities.md): inspect plans, exit codes and live responses. |
+
+**Measured scope:** 18 command blocks passed with CLI 1.0.5 against APIM Consumption and API Center Free. A dry run is a plan, not proof of Azure acceptance or runtime correctness. [Results and limits](validation/README.md) distinguish executed checks from provisioning, cleanup and production integrations that were not repeated or tested.
+
+[Download the self-contained architecture guide](docs/APIM-APIOps-Architecture.html) and open it in a browser for component rationale, trust boundaries and customer decisions. The images above open at full resolution when selected.
+
+References: [APIOps CLI](https://github.com/Azure/apiops-cli), [Microsoft Learn workflow](https://learn.microsoft.com/en-us/azure/api-management/how-to-manage-apiops-cli), [API Center overview](https://learn.microsoft.com/en-us/azure/api-center/overview).
+
+
 ## Start here
 
 Requirements: **Node.js 22+, npm, Azure CLI, Git, jq and curl**. Commands use Bash on macOS/Linux or WSL. Configure a Git name/email for the commit exercises. You do not need Python to follow the labs.
