@@ -1,0 +1,7 @@
+{
+  "properties": {
+    "url": "https://httpbin.org",
+    "protocol": "http",
+    "description": "Public echo endpoint for synthetic demo requests"
+  }
+}

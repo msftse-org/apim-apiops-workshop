@@ -1,0 +1,9 @@
+{
+  "properties": {
+    "title": "OpenAPI",
+    "specification": {
+      "name": "openapi",
+      "version": "3.0.1"
+    }
+  }
+}

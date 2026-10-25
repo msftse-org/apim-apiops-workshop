@@ -1,0 +1,19 @@
+apis:
+  - demo-orders
+backends: []
+namedValues: []
+products: []
+tags:
+  - apiops-demo
+versionSets: []
+loggers: []
+diagnostics: []
+groups: []
+policyFragments: []
+gateways: []
+schemas: []
+subscriptions: []
+policies: []
+policyRestrictions: []
+documentations: []
+workspaces: []

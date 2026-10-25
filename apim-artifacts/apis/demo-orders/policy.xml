@@ -1,0 +1,1 @@
+<policies><inbound><base /><set-backend-service backend-id="echo-backend" /></inbound><backend><base /></backend><outbound><base /><include-fragment fragment-id="demo-headers" /></outbound><on-error><base /></on-error></policies>

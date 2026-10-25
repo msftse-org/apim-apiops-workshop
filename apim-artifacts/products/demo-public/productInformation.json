@@ -1,0 +1,8 @@
+{
+  "properties": {
+    "displayName": "Demo public APIs",
+    "description": "Synthetic demo only",
+    "subscriptionRequired": false,
+    "state": "published"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "properties": {
+    "title": "Demo Orders",
+    "kind": "rest",
+    "description": "Synthetic order API for APIOps demonstration"
+  }
+}

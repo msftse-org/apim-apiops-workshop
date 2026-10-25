@@ -1,0 +1,7 @@
+{
+  "properties": {
+    "displayName": "demo-environment",
+    "value": "canonical",
+    "secret": false
+  }
+}

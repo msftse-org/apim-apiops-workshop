@@ -1,0 +1,22 @@
+environment:
+  namePrefix: "qa-"
+  apiPathPrefix: "qa/"
+namedValues:
+  - name: demo-environment
+    properties:
+      value: "qa"
+  - name: demo-release
+    properties:
+      value: "v2"
+apis:
+  - name: demo-orders
+    properties:
+      displayName: Demo Orders QA
+products:
+  - name: demo-public
+    properties:
+      displayName: Demo public APIs QA
+tags:
+  - name: apiops-demo
+    properties:
+      displayName: APIOps Demo QA

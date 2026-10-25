@@ -1,0 +1,18 @@
+apis:
+  - dev-demo-orders
+backends: []
+namedValues: []
+products: []
+tags: []
+versionSets: []
+loggers: []
+diagnostics: []
+groups: []
+policyFragments: []
+gateways: []
+schemas: []
+subscriptions: []
+policies: []
+policyRestrictions: []
+documentations: []
+workspaces: []

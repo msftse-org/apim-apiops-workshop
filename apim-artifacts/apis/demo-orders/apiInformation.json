@@ -1,0 +1,11 @@
+{
+  "properties": {
+    "displayName": "Demo Orders",
+    "path": "orders",
+    "protocols": [
+      "https"
+    ],
+    "subscriptionRequired": false,
+    "serviceUrl": "https://httpbin.org"
+  }
+}

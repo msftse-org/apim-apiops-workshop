@@ -1,0 +1,8 @@
+{
+  "subscriptionId": "YOUR-SUBSCRIPTION-ID",
+  "resourceGroup": "rg-apim-apiops-workshop",
+  "apim": "YOUR-GLOBALLY-UNIQUE-APIM-NAME",
+  "apic": "YOUR-GLOBALLY-UNIQUE-APIC-NAME",
+  "location": "westeurope",
+  "publisherEmail": "YOU@EXAMPLE.COM"
+}
