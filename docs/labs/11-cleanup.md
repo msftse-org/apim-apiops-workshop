@@ -16,7 +16,7 @@ If this group contains only your workshop resources, run the native delete comma
 az group delete --subscription "$AZURE_SUBSCRIPTION_ID" --name "$RESOURCE_GROUP"
 ```
 
-This deletes the **entire group**, not just its API configuration. Do not run it against a shared or production group. The reference environment stays deployed for demonstrations, so final validation intentionally does not execute whole-group deletion. Lab 06 already removes its disposable named value.
+This deletes the **entire group**, not just its API configuration. Do not run it against a shared or production group. The original reference environment stays deployed for demonstrations. The customer-readiness audit uses a separate temporary group to validate whole-group cleanup; see the validation report for its result. Lab 06 already removes its disposable named value.
 
 No GitHub deployment identity is created by the customer path. If you separately configured customer-owned pipelines, remove their federation, role assignments and variables when retiring those pipelines.
 

@@ -9,9 +9,23 @@ curl --fail-with-body -sS -D .work/qa.headers -o .work/qa.body \
   "https://$APIM_NAME.azure-api.net/qa/orders/status"
 grep -i 'x-demo-' .work/dev.headers .work/qa.headers
 jq -e '.status == "ok" and .synthetic == true' .work/dev.body .work/qa.body
-jq '.summary.totalExtracted' .work/extract-dependencies.json .work/extract-exact.json
-jq '.summary.totalPuts' "$RELEASE_LAB/override-preview.json"
-jq '.dryRun.actions' "$DELETE_LAB/delete-plan.json"
+grep -qi 'x-demo-environment: dev' .work/dev.headers
+grep -qi 'x-demo-release: v1' .work/dev.headers
+grep -qi 'x-demo-environment: qa' .work/qa.headers
+grep -qi 'x-demo-release: v2' .work/qa.headers
+jq -se '.[0].summary.totalExtracted > .[1].summary.totalExtracted' \
+  .work/extract-dependencies.json .work/extract-exact.json
+jq -e '.summary.totalPuts == 1' "$RELEASE_LAB/change-preview.json"
+jq -e '.summary.totalPuts == 0' "$RELEASE_LAB/override-preview.json"
+jq -e '.dryRun.actions | length == 1 and .[0].operation == "DELETE" and .[0].type == "NamedValue" and .[0].name == "workshop-temporary"' "$DELETE_LAB/delete-plan.json"
+test -f .work/extract-patterns/namedValues/dev-demo-environment/namedValueInformation.json
+test ! -f .work/extract-patterns/namedValues/dev-demo-release/namedValueInformation.json
+test ! -f "$DELETE_LAB/extracted/namedValues/dev-workshop-temporary/namedValueInformation.json"
+test "$(find .work/apic-backup -name 'specification.*' | wc -l | tr -d ' ')" -gt 0
+test "$(find .work/apic-metadata -name 'specification.*' | wc -l | tr -d ' ')" -eq 0
+test -d "$GITHUB_LAB/.github/prompts"
+test -d "$AZDO_LAB/.github/prompts"
+echo "All final workshop assertions passed"
 ```
 
 Check all outcomes:

@@ -1,0 +1,135 @@
+{
+  "validatedOn": "2026-10-25",
+  "result": "passed",
+  "package": "@azure-tools/apiops-cli",
+  "version": "1.0.5",
+  "azureRun": {
+    "source": "Clean public clone with the reviewed lab corrections applied",
+    "operatingSystem": "macOS",
+    "shell": "Bash 3.2.57",
+    "node": "26.7.0",
+    "azureCli": "2.89.1",
+    "apimSku": "Consumption",
+    "apiCenterSku": "Free",
+    "region": "westeurope",
+    "freshProvisioning": "passed",
+    "literalLabBlocks": [
+      {
+        "block": "00-setup:1",
+        "sha256": "9e9474bd7a59e8184a752b1698f1f0a3fab8be5fd5660d860db3f821969437b3"
+      },
+      {
+        "block": "01-resources:1",
+        "sha256": "a75b3b72efc3f817a77dd38d2ae65a3cffbdc7cc09535fb6dd8381076777e109"
+      },
+      {
+        "block": "01-resources:3",
+        "sha256": "df505dec88c09f5f8f087920358a5fae08a43ae1e257b028c7affc2f87951525"
+      },
+      {
+        "block": "02-deploy:1",
+        "sha256": "c9f42a5d4098f1a466b85d9b91e05f4f567923ddfcfdf86af783ef7bee70d544"
+      },
+      {
+        "block": "02-deploy:2",
+        "sha256": "9db08091d78b59a4c0f40f57b6d5596978feb4aebbb9663f5193ea88cb802d05"
+      },
+      {
+        "block": "03-release:1",
+        "sha256": "06b9f58001d8c2c2722e109fcabf57fc207998c65684731d87c34300e4316e96"
+      },
+      {
+        "block": "03-release:2",
+        "sha256": "362f45791af724629aa1eb78e8a59fe2302fd3cfcea87ed8079ffd8e172ef6c2"
+      },
+      {
+        "block": "04-overrides:1",
+        "sha256": "073036bbe5a0c8faa790be052d30ed186d07158114a2f1d3368f6d2d19b05d45"
+      },
+      {
+        "block": "04-overrides:2",
+        "sha256": "ed79d63f453db100190a7c121d7c3cf78017ea01505ba4f17f7f9fe43fea173e"
+      },
+      {
+        "block": "05-filtering:1",
+        "sha256": "512770ee5a3a34307b5e67c2ae1cf8f3cf033968c43c605fa17e469689f456f9"
+      },
+      {
+        "block": "05-filtering:2",
+        "sha256": "e7a54986ebb33b94d924705786c6e6cd2823272a4b54499828ac3ae61840d617"
+      },
+      {
+        "block": "05-filtering:3",
+        "sha256": "8e14a86b3d9513c6ed0f14f393aeaa2196415a88aaa8912895b338360622a14a"
+      },
+      {
+        "block": "06-guards:1",
+        "sha256": "561e1f657e9924acaebf96b241087da83f75af5ccbcb565c653b5002d68e2fe7"
+      },
+      {
+        "block": "06-guards:2",
+        "sha256": "62e0c2397c30c2033e93be9e3165d0a844dbe7a54faec1eef0f1b86319404792"
+      },
+      {
+        "block": "06-guards:3",
+        "sha256": "f39006a138719323b602eb69fc0ee37971f237a3fcba0ad7ff7d05cdf4dffbd7"
+      },
+      {
+        "block": "07-api-center:1",
+        "sha256": "26f5ffa6abbbc6faea6c1bc41b1d1099e368f3090886f290612d9fc4d1609485"
+      },
+      {
+        "block": "07-api-center:2",
+        "sha256": "0a6746b1a84f7f1e61c36ad4fc241efc63be3728763f526f620fc542a0edb5f1"
+      },
+      {
+        "block": "07-api-center:3",
+        "sha256": "3082296ac7a4c9e58b20c85c173728be208f7d4549e328c8409b53bb6b1cc47d"
+      },
+      {
+        "block": "08-cicd:1",
+        "sha256": "1d7e375c83612eec2cf7b11853e33872dd932fe928b0c90614cf3881e12bdf81"
+      },
+      {
+        "block": "09-cli-utilities:1",
+        "sha256": "c81725e3cff280fd80dcab28a5092fe7af49f371ef44a2ccb1b57d6ee3e5b1b3"
+      },
+      {
+        "block": "10-validation:1",
+        "sha256": "61a70b144c177ae713ceff09ef899db0c2c4c5914600eae4668c24b10858c8e3"
+      }
+    ],
+    "allFinalAssertions": "passed",
+    "cleanup": "passed: documented az group delete confirmed interactively; az group exists returned false"
+  },
+  "publicNpm": {
+    "runner": "GitHub-hosted ubuntu-latest",
+    "nodeVersions": [
+      "22",
+      "24"
+    ],
+    "registry": "https://registry.npmjs.org/",
+    "installation": "passed",
+    "help": "passed",
+    "githubActionsInit": "passed",
+    "azureDevOpsInit": "passed",
+    "azureCredentialsUsed": false,
+    "runUrl": "https://github.com/msftse-org/apim-apiops-workshop/actions/runs/40197294045",
+    "workflowCommit": "a3c62f4",
+    "integrityMatchesLocalPackage": true
+  },
+  "corporateMachine": {
+    "configuredRegistryInstallation": "passed",
+    "directPublicRegistryConnection": "ENOTCONN on this network",
+    "workaround": "Use the existing organization-approved npm configuration; the workshop does not require a corporate registry",
+    "localPrefixFallback": "passed using the literal Lab 00 optional installation block"
+  },
+  "notEstablished": [
+    "Every customer tenant, policy, permission assignment or region",
+    "Full Azure labs on Windows/WSL or Linux",
+    "Interactive az login performed by a new user",
+    "All Node versions, APIM tiers, resource types and protocol combinations",
+    "Hosted Azure deployment, Key Vault and interactive Copilot"
+  ],
+  "packageIntegrity": "sha512-gGCr0wK1aplkr3JbVmxNtCatdsVTfyQbO7IGh3G5RrnL0r84FH0v6bW6Ud1jZM98Ccj9un5YDaoLyGPQulxnXA=="
+}

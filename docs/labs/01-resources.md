@@ -4,6 +4,13 @@
 
 Skip the creation block if your administrator has already provisioned these resources. Set `.env` to those exact names instead. APIM names must be globally unique.
 
+Before creating resources, check provider registration. If either provider is not `Registered`, ask a subscription administrator to register it using `az provider register --namespace Microsoft.ApiManagement --wait` or `az provider register --namespace Microsoft.ApiCenter --wait`. Registration requires subscription-level permissions; a role on an existing group alone may not be sufficient.
+
+```bash
+az provider show --namespace Microsoft.ApiManagement --query registrationState -o tsv
+az provider show --namespace Microsoft.ApiCenter --query registrationState -o tsv
+```
+
 ```bash
 az group create --subscription "$AZURE_SUBSCRIPTION_ID" \
   --name "$RESOURCE_GROUP" --location "$LOCATION" --tags purpose=apim-apiops-workshop
@@ -21,6 +28,9 @@ az rest --method put \
 Verify the resources:
 
 ```bash
+az apim wait --created --interval 30 --timeout 3600 \
+  --subscription "$AZURE_SUBSCRIPTION_ID" --resource-group "$RESOURCE_GROUP" --name "$APIM_NAME"
+
 az apim show --subscription "$AZURE_SUBSCRIPTION_ID" \
   --resource-group "$RESOURCE_GROUP" --name "$APIM_NAME" \
   --query '{state:provisioningState,sku:sku.name,gateway:gatewayUrl}' -o table
@@ -31,6 +41,6 @@ az resource list --subscription "$AZURE_SUBSCRIPTION_ID" \
 
 Wait for APIM provisioning to report `Succeeded`. Creation may take several minutes. Regional SKU availability, naming, quota and subscription policy may affect provisioning. Use an allowed region if West Europe is unavailable.
 
-Consumption is metered. A Free API Center does not make the entire Azure lab free. The author validated publishing against existing resources; fresh creation was performed in the original sandbox setup. Your tenant's provisioning policy is not assumed to match it.
+Consumption is metered. A Free API Center does not make the entire Azure lab free. The customer-readiness audit repeated these creation commands in a new dedicated resource group. Your tenant's provisioning policy is not assumed to match it.
 
 [Next: Deploy](02-deploy.md)

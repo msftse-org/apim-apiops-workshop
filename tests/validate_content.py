@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Validate workshop artifact contracts and local documentation links without Azure access."""
-import json,re,sys,xml.etree.ElementTree as ET
+import json,re,sys,subprocess,xml.etree.ElementTree as ET
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -29,6 +29,12 @@ def main():
             path=link.split('#')[0]
             assert (p.parent/path).exists(),f'Broken link in {p}: {link}'
             checks+=1
+    # Syntax-check the real Bash examples without running Azure commands.
+    for p in (ROOT/'docs/labs').glob('*.md'):
+        for index, block in enumerate(re.findall(r'```bash\n(.*?)```', p.read_text(), re.S), 1):
+            result = subprocess.run(['bash', '-n'], input=block, text=True, capture_output=True)
+            assert result.returncode == 0, f'Invalid Bash in {p.name} block {index}: {result.stderr}'
+            checks += 1
     # Inspect only publishable text, never config.local.json or runtime logs.
     for folder in ['apim-artifacts','apic-artifacts','examples','docs','tests','validation']:
         for p in (ROOT/folder).rglob('*'):
@@ -37,6 +43,6 @@ def main():
             assert not re.search(r'eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.',text),f'Possible JWT: {p}'
             assert not re.search(r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----',text),f'Private key: {p}'
             assert not re.search(r'gh[pousr]_[A-Za-z0-9]{30,}',text),f'Possible GitHub credential: {p}'
-    print(json.dumps({'passed':True,'artifactAndLinkChecks':checks,'scope':'JSON/XML contracts, baseline, filters, local links and credential patterns'},indent=2))
+    print(json.dumps({'passed':True,'artifactAndLinkChecks':checks,'scope':'JSON/XML contracts, baseline, filters, local links, Bash syntax and credential patterns'},indent=2))
 
 if __name__=='__main__':main()

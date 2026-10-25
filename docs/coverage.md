@@ -18,7 +18,7 @@ Every customer-facing deployment and extraction step calls the native `apiops` C
 | Both init platforms | 08 | Scaffolds, prompts, overwrite conflict and force |
 | CLI output and diagnostics | 09 | Native help, JSON, debug logs, exit codes |
 | Verification | 10 | Real endpoint and artifact assertions |
-| Cleanup | 11 | Instructions only; reference group retained |
+| Cleanup | 11 | Executed against the fresh audit group; original reference group retained |
 
 See [validation](../validation/README.md) for measured results and any corrections. The local command blocks are the tested customer path. GitHub repository CI checks content offline and has no Azure deployment connection.
 

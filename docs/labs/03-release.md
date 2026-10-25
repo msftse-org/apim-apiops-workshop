@@ -33,9 +33,9 @@ apiops publish \
   --source apim-artifacts --overrides configuration.dev.yaml --commit-id "$CHANGE_COMMIT"
 # Wait for the gateway to serve the requested release.
 for attempt in {1..24}; do
-  curl --fail-with-body --max-time 30 -sS -D response.headers -o response.body \
-    "https://$APIM_NAME.azure-api.net/dev/orders/status"
-  grep -qi "x-demo-release: v2" response.headers && break
+  if curl --fail-with-body --max-time 30 -sS -D response.headers -o response.body \
+    "https://$APIM_NAME.azure-api.net/dev/orders/status" &&
+    grep -qi "x-demo-release: v2" response.headers; then break; fi
   sleep 5
 done
 grep -qi "x-demo-release: v2" response.headers
@@ -55,9 +55,9 @@ apiops publish \
   --source apim-artifacts --overrides configuration.dev.yaml --commit-id "$ROLLBACK_COMMIT"
 # Wait for the gateway to serve the requested release.
 for attempt in {1..24}; do
-  curl --fail-with-body --max-time 30 -sS -D response.headers -o response.body \
-    "https://$APIM_NAME.azure-api.net/dev/orders/status"
-  grep -qi "x-demo-release: v1" response.headers && break
+  if curl --fail-with-body --max-time 30 -sS -D response.headers -o response.body \
+    "https://$APIM_NAME.azure-api.net/dev/orders/status" &&
+    grep -qi "x-demo-release: v1" response.headers; then break; fi
   sleep 5
 done
 grep -qi "x-demo-release: v1" response.headers
