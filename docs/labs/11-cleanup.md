@@ -1,18 +1,23 @@
-# Lab 11: Cleanup
+# Lab 11: Clean up your resources
 
-**Outcome:** remove your workshop resources after reviewing the target.
+**Outcome:** remove the resources from your own dedicated workshop group when finished.
+
+Review the account and every resource first:
 
 ```bash
-python3 scripts/resources.py list
-python3 scripts/resources.py plan
-# Replace the argument with the exact resource group in config.local.json.
-python3 scripts/resources.py cleanup --delete-resource-group YOUR-WORKSHOP-RESOURCE-GROUP
+az account show --query '{tenant:tenantId,subscription:id,name:name}' -o table
+az resource list --subscription "$AZURE_SUBSCRIPTION_ID" \
+  --resource-group "$RESOURCE_GROUP" --query '[].{name:name,type:type}' -o table
 ```
 
-Cleanup deletes the **entire configured resource group**. It requires both the exact group name and a workshop purpose tag. Do not put unrelated resources in that group. The script refuses a mismatched name or missing tag.
+If this group contains only your workshop resources, run the native delete command and answer its confirmation prompt:
 
-The instructor's reference environment stays deployed for demonstrations; whole-group deletion was intentionally not executed during the latest workshop validation. The disposable secret/deletion exercise does clean up its own temporary named value.
+```bash
+az group delete --subscription "$AZURE_SUBSCRIPTION_ID" --name "$RESOURCE_GROUP"
+```
 
-For a hosted setup, separately remove the workshop role assignment, Entra app/federated credential and repository variables when you retire that setup. Group deletion alone does not delete tenant-level identities or GitHub configuration.
+This deletes the **entire group**, not just its API configuration. Do not run it against a shared or production group. The reference environment stays deployed for demonstrations, so final validation intentionally does not execute whole-group deletion. Lab 06 already removes its disposable named value.
+
+No GitHub deployment identity is created by the customer path. If you separately configured customer-owned pipelines, remove their federation, role assignments and variables when retiring those pipelines.
 
 [Return to workshop](../../README.md)

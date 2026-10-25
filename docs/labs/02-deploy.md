@@ -1,31 +1,48 @@
-# Lab 02: First deployment
+# Lab 02: Preview and deploy dev and QA
 
-**Outcome:** two working API routes from one set of canonical artifacts.
+**Outcome:** one canonical artifact set, two API namespaces and observable headers.
 
-1. Open `apim-artifacts/apis/demo-orders/specification.json`. Find `/status` and `/echo`.
-2. Open `operations/get-status/policy.xml`. This operation returns a synthetic response.
-3. Open the API policy and `policyFragments/demo-headers/policyFragmentInformation.json`. The fragment supplies environment and release headers.
-4. Preview, publish, then repeat for QA:
+Open `apim-artifacts/apis/demo-orders/specification.json` and the operation policies. `/status` returns synthetic JSON. `/echo` calls the public httpbin backend. The policy fragment adds environment/release headers.
+
+From the repository root:
 
 ```bash
-python3 scripts/workshop.py preview --env dev
-python3 scripts/workshop.py publish --env dev
-python3 scripts/workshop.py preview --env qa
-python3 scripts/workshop.py publish --env qa
-python3 scripts/workshop.py status
+unset COMMIT_ID
+mkdir -p .work
+apiops publish \
+  --subscription-id "$AZURE_SUBSCRIPTION_ID" \
+  --resource-group "$RESOURCE_GROUP" \
+  --service-name "$APIM_NAME" \
+  --source apim-artifacts --overrides configuration.dev.yaml --dry-run --format json > .work/dev-preview.json
+jq '.dryRun.actions' .work/dev-preview.json
+apiops publish \
+  --subscription-id "$AZURE_SUBSCRIPTION_ID" \
+  --resource-group "$RESOURCE_GROUP" \
+  --service-name "$APIM_NAME" \
+  --source apim-artifacts --overrides configuration.dev.yaml
+
+apiops publish \
+  --subscription-id "$AZURE_SUBSCRIPTION_ID" \
+  --resource-group "$RESOURCE_GROUP" \
+  --service-name "$APIM_NAME" \
+  --source apim-artifacts --overrides configuration.qa.yaml --dry-run
+apiops publish \
+  --subscription-id "$AZURE_SUBSCRIPTION_ID" \
+  --resource-group "$RESOURCE_GROUP" \
+  --service-name "$APIM_NAME" \
+  --source apim-artifacts --overrides configuration.qa.yaml
 ```
 
-Expected: `/dev/orders/status` returns HTTP 200 with `X-Demo-Environment: dev` and `X-Demo-Release: v1`. `/qa/orders/status` returns HTTP 200 with `qa` and `v2`. The status helper retries while gateway changes propagate.
+Call both routes:
 
-The wrapper executes this CLI pattern with your configured Azure identifiers:
-
-```text
-apiops publish --source apim-artifacts --overrides configuration.dev.yaml
-  --subscription-id <id> --resource-group <rg> --service-name <apim> --format json
+```bash
+curl --fail-with-body -i "https://$APIM_NAME.azure-api.net/dev/orders/status"
+curl --fail-with-body -i "https://$APIM_NAME.azure-api.net/qa/orders/status"
+curl --fail-with-body -i "https://$APIM_NAME.azure-api.net/dev/orders/echo"
 ```
 
-Dry-run adds `--dry-run`. Inspect `.work/logs/dev-preview.stdout.txt`: `dryRun.actions` describes the plan. A successful preview does not guarantee Azure will accept every property at publish time.
+Expected: HTTP 200, dev release v1 and QA release v2 in `X-Demo-Environment` / `X-Demo-Release`. The status body contains `"synthetic": true`. The echo body shows an upstream URL ending `/get`. Gateway changes can take a short time to propagate; retry the call if you briefly see the old value.
 
-For the backend example, call `https://<your-apim>.azure-api.net/dev/orders/echo`. The policy routes to `httpbin.org/get`; the live suite checks its response and headers. This depends on an external public service. The `/status` exercise works without that backend.
+A dry-run is a plan, not proof Azure will accept every property. The external echo service may be unavailable; `/status` does not depend on it.
 
 [Next: Release and rollback](03-release.md)

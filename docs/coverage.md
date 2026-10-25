@@ -1,36 +1,27 @@
 # Coverage and boundaries
 
-The workshop covers every top-level command family in the pinned CLI: `init`, APIM `extract` / `publish`, and API Center `apic extract` / `apic publish`. It exercises important options through runnable labs rather than claiming to test every combination.
+Every customer-facing deployment and extraction step calls the native `apiops` CLI. Azure CLI handles account selection and provisioning, Git handles change history, and curl/jq inspect results. No deployment wrapper is required.
 
-| Capability | Exercise | Validation scope |
+| Capability | Lab | Measured scope |
 |---|---|---|
-| Full publish and dry-run JSON | 02 | Live dev and QA |
-| OpenAPI and operation policies | 02 | Status and echo operations |
-| Backend, fragment and named values | 02/05 | Runtime response and extraction |
-| Product and tag association | 02/05 | Publish and extraction |
-| Environment prefixes and overrides | 04 | Shared gateway dev/QA |
-| Incremental update and rollback | 03 | One PUT change and revert |
-| Override-only commit | 04 | Zero selected PUTs |
-| Exact filters and dependencies | 05 | Compare extraction and filtered publish |
-| Wildcards and exclusions | 05 | Named-value inclusion/exclusion assertions |
-| Secret redaction and preflight rejection | 06 | Synthetic secret only |
-| Commit-scoped deletion | 06 | Exactly one temporary named value |
-| Stale artifact removal | 06 | Removed local file assertion |
-| API Center metadata/specifications | 07 | Same-instance backup and replay |
-| Workspace selection / no specifications | 07 | API Center default workspace |
-| GitHub Actions / Azure DevOps init | 08 | Both scaffolds, conflict and force |
-| Copilot prompt generation | 08 | Files present; interactive Copilot not automated |
-| Hosted GitHub workflow | 09 | See linked execution results |
-| Provisioning and cleanup | 01/11 | Existing sandbox reuse; whole-group deletion not rerun |
+| CLI installation/help | 00 | Published npm package 1.0.5 |
+| Full publish and JSON dry-run | 02 | Dev and QA configuration |
+| OpenAPI, operation policies, backend, fragment, named values | 02/05 | Status/echo runtime and extraction |
+| Products and tags | 02/05 | Publish and association |
+| Prefixes and environment overrides | 04 | Shared gateway namespaces |
+| Incremental change and rollback | 03 | One named-value PUT and Git revert |
+| Override-only commit | 04 | Zero incremental PUTs, full publish |
+| Filters and dependency expansion | 05 | Exact, full, wildcard/exclusion and filtered publish |
+| Secret redaction and rejection | 06 | Synthetic value only |
+| Commit-scoped deletion and remove-stale | 06 | One disposable named value |
+| API Center | 07 | Seed, backup, same-instance replay, metadata-only variants |
+| Both init platforms | 08 | Scaffolds, prompts, overwrite conflict and force |
+| CLI output and diagnostics | 09 | Native help, JSON, debug logs, exit codes |
+| Verification | 10 | Real endpoint and artifact assertions |
+| Cleanup | 11 | Instructions only; reference group retained |
 
-## Additional upstream features
+See [validation](../validation/README.md) for measured results and any corrections. The local command blocks are the tested customer path. GitHub repository CI checks content offline and has no Azure deployment connection.
 
-APIM workspaces, additional API protocols, revisions/version sets, loggers/diagnostics, gateways, subscriptions, schema/documentation resources and many nested override/filter combinations need dedicated fixtures and, in some cases, a different APIM tier. They are documented upstream but not certified by this Consumption workshop. API Center workspaces are separate from APIM workspaces.
+APIM workspaces, additional protocols, revisions/version sets, loggers/diagnostics, gateways, subscriptions and other resource combinations need dedicated fixtures or different tiers. Key Vault, pipeline secret injection, interactive Copilot, hosted CI deployments, sovereign clouds and private networking are not claimed as tested integrations here. API Center workspaces are distinct from APIM workspaces.
 
-Key Vault references, pipeline secret substitution, Azure DevOps hosted execution, sovereign clouds, service-principal secret authentication and managed identity are documented options. The live local path uses Azure CLI; the GitHub path uses federation when configured. No paid APIM tier or real secret store was provisioned merely to increase the checklist.
-
-## Production considerations
-
-This is a demonstration, not a production reference security architecture. The public mock API has no subscription authentication, the environments share a gateway, and the source is pinned for repeatability. The initial upstream dependency audit reported advisories. Evaluate updates, least-privilege identities, isolated environments, approval gates, secret management and broader regression tests before production adoption.
-
-See [official source links](sources.md) and [recorded results](../validation/README.md).
+This synthetic, unauthenticated sample uses APIM Consumption and a shared dev/QA gateway. The pinned package improves repeatability but is not a security certification. Review current upstream dependency advisories, permissions, secret management, environment isolation and approval practices before production adoption.

@@ -1,15 +1,47 @@
-# Lab 04: Environment overrides
+# Lab 04: Overrides and the incremental trap
 
-**Outcome:** understand how one artifact set produces distinct dev and QA routes.
+**Outcome:** understand canonical names, prefixes, routes and override-only changes.
 
-1. Compare `configuration.dev.yaml` and `configuration.qa.yaml`.
-2. Find `environment.namePrefix` and `apiPathPrefix`. These create names such as `qa-demo-orders` and route `/qa/orders`.
-3. Observe that override entries still use canonical names such as `demo-environment`, not `qa-demo-environment`.
-4. Find the QA release override `v2`. It stays v2 even when the source named value changes for dev.
-5. Find QA display-name overrides for the API, product and tag. The original live tests exposed collisions when these were not distinct.
-6. Read the `override-only-preview` output in the latest `.work/release-*/.work/logs/` after `cycle`. Expected: zero PUTs when only the configuration file changes in a commit.
-7. To apply an override-only change, run a full `python3 scripts/workshop.py publish --env qa`.
+Compare `configuration.dev.yaml` and `configuration.qa.yaml`. QA uses `namePrefix: qa-`, `apiPathPrefix: qa/`, distinct display names and release value v2. Override entries use canonical names such as `demo-release`, not `qa-demo-release`.
 
-A real production promotion would typically target a separate APIM service and different backend/Key Vault references. This shared-gateway pattern is for the workshop and does not create separate security boundaries.
+Continue in the disposable Git repository from Lab 03. Add a harmless API description override and commit only that configuration file:
 
-[Next: Filtering](05-filtering.md)
+```bash
+cd "$RELEASE_LAB"
+cat >> configuration.dev.yaml <<'YAML'
+apis:
+  - name: demo-orders
+    properties:
+      description: "Environment override workshop exercise"
+YAML
+git add configuration.dev.yaml
+git commit -m "Override-only change"
+OVERRIDE_COMMIT=$(git rev-parse HEAD)
+apiops publish \
+  --subscription-id "$AZURE_SUBSCRIPTION_ID" \
+  --resource-group "$RESOURCE_GROUP" \
+  --service-name "$APIM_NAME" \
+  --source apim-artifacts --overrides configuration.dev.yaml --commit-id "$OVERRIDE_COMMIT" --dry-run --format json > override-preview.json
+jq '.summary.totalPuts' override-preview.json
+```
+
+Expected: **0**. Incremental selection uses artifact changes, so this commit does not select the API. Apply a full publish instead, then restore the original override file:
+
+```bash
+apiops publish \
+  --subscription-id "$AZURE_SUBSCRIPTION_ID" \
+  --resource-group "$RESOURCE_GROUP" \
+  --service-name "$APIM_NAME" \
+  --source apim-artifacts --overrides configuration.dev.yaml
+git revert --no-edit "$OVERRIDE_COMMIT"
+apiops publish \
+  --subscription-id "$AZURE_SUBSCRIPTION_ID" \
+  --resource-group "$RESOURCE_GROUP" \
+  --service-name "$APIM_NAME" \
+  --source apim-artifacts --overrides configuration.dev.yaml
+cd "$WORKSHOP_ROOT"
+```
+
+The full publish sends the artifact set with environment overrides applied. This lab uses a shared gateway for cost control. Separate production environments usually use separate services, backend URLs and secret references.
+
+[Next: Extraction and filters](05-filtering.md)

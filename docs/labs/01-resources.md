@@ -1,18 +1,36 @@
-# Lab 01: Resources
+# Lab 01: Create or select your Azure resources
 
-**Outcome:** an APIM Consumption gateway and a separate API Center Free catalog in a dedicated resource group.
+**Outcome:** APIM Consumption and API Center Free in your own dedicated resource group.
+
+Skip the creation block if your administrator has already provisioned these resources. Set `.env` to those exact names instead. APIM names must be globally unique.
 
 ```bash
-python3 scripts/resources.py plan
-python3 scripts/resources.py provision
-python3 scripts/resources.py list
-python3 scripts/workshop.py doctor
+az group create --subscription "$AZURE_SUBSCRIPTION_ID" \
+  --name "$RESOURCE_GROUP" --location "$LOCATION" --tags purpose=apim-apiops-workshop
+
+az apim create --subscription "$AZURE_SUBSCRIPTION_ID" \
+  --resource-group "$RESOURCE_GROUP" --name "$APIM_NAME" --location "$LOCATION" \
+  --sku-name Consumption --sku-capacity 0 \
+  --publisher-name "APIM Workshop" --publisher-email "$PUBLISHER_EMAIL"
+
+az rest --method put \
+  --url "https://management.azure.com/subscriptions/$AZURE_SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.ApiCenter/services/$APIC_NAME?api-version=2024-03-01" \
+  --body "$(jq -n --arg location "$LOCATION" '{location:$location,sku:{name:"Free"},properties:{}}')"
 ```
 
-The provision command first checks for existing resources. It creates missing resources and reuses existing ones. APIM requires a publisher email when it is first created. The script does not upgrade or downgrade an existing APIM SKU. Wait for APIM provisioning to finish before publishing. Resource creation can take several minutes and can fail due to regional SKU availability, quota, naming or subscription policy.
+Verify the resources:
 
-In Azure portal, confirm the APIM SKU and API Center SKU. Consumption is metered and other Azure usage may incur charges. A Free API Center does not make the entire lab free.
+```bash
+az apim show --subscription "$AZURE_SUBSCRIPTION_ID" \
+  --resource-group "$RESOURCE_GROUP" --name "$APIM_NAME" \
+  --query '{state:provisioningState,sku:sku.name,gateway:gatewayUrl}' -o table
 
-The reference sandbox was already deployed when the public workshop was validated. The idempotent reuse path was checked again. Fresh resource creation was exercised during the original lab, not recreated for every validation run.
+az resource list --subscription "$AZURE_SUBSCRIPTION_ID" \
+  --resource-group "$RESOURCE_GROUP" --query '[].{name:name,type:type}' -o table
+```
 
-[Next: First deployment](02-deploy.md)
+Wait for APIM provisioning to report `Succeeded`. Creation may take several minutes. Regional SKU availability, naming, quota and subscription policy may affect provisioning. Use an allowed region if West Europe is unavailable.
+
+Consumption is metered. A Free API Center does not make the entire Azure lab free. The author validated publishing against existing resources; fresh creation was performed in the original sandbox setup. Your tenant's provisioning policy is not assumed to match it.
+
+[Next: Deploy](02-deploy.md)

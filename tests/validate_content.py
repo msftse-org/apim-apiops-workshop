@@ -19,7 +19,7 @@ def main():
     assert release['properties']['value']=='v1','Public baseline must remain v1'
     qa=(ROOT/'configuration.qa.yaml').read_text();assert 'namePrefix: "qa-"' in qa and 'value: "v2"' in qa
     for p in [ROOT/'filter.dev-strict.yaml',ROOT/'filter.orders-strict.yaml']:
-        from workshop import FILTER_KEYS
+        FILTER_KEYS=['apis', 'backends', 'namedValues', 'products', 'tags', 'versionSets', 'loggers', 'diagnostics', 'groups', 'policyFragments', 'gateways', 'schemas', 'subscriptions', 'policies', 'policyRestrictions', 'documentations', 'workspaces']
         assert set(re.findall(r'^(\w+):',p.read_text(),re.M))==set(FILTER_KEYS)
         checks+=1
     for p in [ROOT/'README.md',*(ROOT/'docs').rglob('*.md')]:
@@ -30,7 +30,7 @@ def main():
             assert (p.parent/path).exists(),f'Broken link in {p}: {link}'
             checks+=1
     # Inspect only publishable text, never config.local.json or runtime logs.
-    for folder in ['apim-artifacts','apic-artifacts','docs','scripts','validation']:
+    for folder in ['apim-artifacts','apic-artifacts','examples','docs','tests','validation']:
         for p in (ROOT/folder).rglob('*'):
             if not p.is_file() or p.suffix in ['.pptx','.png','.pyc']:continue
             text=p.read_text()

@@ -1,17 +1,25 @@
-# Lab 00: Setup
+# Lab 00: Install the CLI and sign in
 
-**Outcome:** run the same CLI version used to validate the workshop.
+**Outcome:** use the real `apiops` executable against your own Azure account.
 
-1. Install Node.js 22 or later, npm, Git, Python 3.10 or later and Azure CLI. Use Bash on macOS/Linux or WSL on Windows.
-2. Clone this repository, enter its root and run `bash scripts/install.sh`.
-3. Run `bash scripts/apiops.sh --version`. Expected: `1.0.5`.
-4. Copy `config.example.json` to `config.local.json`. Enter your subscription ID, dedicated resource group, region, globally unique APIM/API Center names, and publisher email.
-5. Run `az login`. Select an account that can access your sandbox subscription.
-6. Run `python3 scripts/resources.py plan` and inspect the target names before provisioning.
-7. After Lab 01, run `python3 scripts/workshop.py doctor`. Every reported step should have `passed: true`.
+Install Node.js 22+, npm, Azure CLI, Git, jq and curl. Use Bash or WSL. Follow the README clone and environment setup first, then inspect the native CLI:
 
-`config.local.json`, `.work/`, `vendor/` and npm cache are Git-ignored. Never commit credentials or local raw logs. The workshop uses Azure CLI through DefaultAzureCredential. For new resource creation you need resource creation rights in the chosen subscription/group. For existing services, use APIM write permissions and API Center write permissions scoped to the lab resources. Hosted federation is covered separately in Lab 09.
+```bash
+apiops --version
+apiops --help
+apiops extract --help
+apiops publish --help
+apiops init --help
+apiops apic --help
+az account show --query '{tenant:tenantId,subscription:id,name:name}' -o table
+```
 
-The installer fetches the exact upstream commit and builds locally. It does not install an unpinned global CLI. `APIOPS_CLI` can point to an already-built entry point when testing another version, but results must identify that version.
+Expected CLI version: `1.0.5`. Confirm the tenant and subscription are yours before making changes. If different, run `az login --tenant "$TENANT_ID"` and `az account set --subscription "$AZURE_SUBSCRIPTION_ID"` again.
+
+If global npm installation is unavailable, `npx --yes @azure-tools/apiops-cli@1.0.5 <command>` invokes the same CLI. Replace the word `apiops` with that command prefix consistently.
+
+Privileges: resource creation usually requires Contributor on the dedicated group, plus permission to create the group if it does not exist. Managing existing APIM configuration requires APIM write permissions; API Center needs its own write permissions. Ask your administrator for suitable lab access. No tenant-wide administrator role or GitHub identity is required for these local exercises.
+
+Keep `.env` private. `apiops` uses DefaultAzureCredential, including your Azure CLI sign-in. Do not set service-principal secret variables unless deliberately using that authentication method. `unset COMMIT_ID` before full publishes if your shell inherited it from CI.
 
 [Next: Resources](01-resources.md)

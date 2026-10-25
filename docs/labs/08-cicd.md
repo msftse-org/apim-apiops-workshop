@@ -1,29 +1,42 @@
-# Lab 08: CI/CD scaffolding and Copilot prompts
+# Lab 08: Generate CI/CD and Copilot files
 
-**Outcome:** generate both supported pipeline formats without overwriting this workshop repository.
+**Outcome:** see what `apiops init` creates for both supported platforms. No deployment pipeline is connected to Azure by this lab.
 
 ```bash
-python3 scripts/workshop.py scaffold
+GITHUB_LAB=$(mktemp -d "$WORKSHOP_ROOT/.work/github.XXXXXX")
+cd "$GITHUB_LAB"
+apiops init --ci github-actions --environments dev,qa --non-interactive
+find . -maxdepth 4 -type f
+
+# Existing generated files require an explicit overwrite decision.
+if apiops init --ci github-actions --environments dev,qa --non-interactive; then
+  echo "Unexpected overwrite without --force"; exit 1
+else
+  result=$?
+  test "$result" -eq 1
+  echo "Expected overwrite conflict (exit 1)"
+fi
+apiops init --ci github-actions --environments dev,qa --non-interactive --force
+
+AZDO_LAB=$(mktemp -d "$WORKSHOP_ROOT/.work/azure-devops.XXXXXX")
+cd "$AZDO_LAB"
+apiops init --ci azure-devops --environments dev,qa --non-interactive
+find . -maxdepth 4 -type f
+if apiops init --ci azure-devops --environments dev,qa --non-interactive; then
+  echo "Unexpected overwrite without --force"; exit 1
+else
+  result=$?
+  test "$result" -eq 1
+  echo "Expected overwrite conflict (exit 1)"
+fi
+apiops init --ci azure-devops --environments dev,qa --non-interactive --force
+cd "$WORKSHOP_ROOT"
 ```
 
-For each of `github-actions` and `azure-devops`, the runner creates a fresh `.work/scaffold-<platform>-<timestamp>/` directory and runs:
+Inspect the extraction/publish workflows, configuration files and identity setup guide. The generated files use workload identity federation patterns. A customer who wants to deploy through their own CI system must configure their own repository, identities, permissions and approval gates separately.
 
-```text
-apiops init --ci <platform> --environments dev,qa --non-interactive
-```
+Open `.github/prompts/` in either generated directory. The prompts help GitHub Copilot prepare filters, overrides and platform identity setup. Interactive Copilot requires your own licensed VS Code account and is not part of the automated execution evidence.
 
-It asserts configuration and Copilot prompt files exist, repeats init to test overwrite protection, and then tests explicit `--force` regeneration.
+These generated files remain under ignored `.work/`. The public workshop repository has only offline validation CI, with no Azure variables or deployment trust.
 
-Inspect the generated files:
-
-1. The extraction workflow: how does it capture configuration and create a proposed Git change?
-2. The publishing workflow: where are environment overrides selected?
-3. The identity setup guide: which app, federation settings and Azure roles are required?
-4. `.github/prompts/`: filter configuration, override configuration and platform identity prompts.
-5. Configuration schema references: how can VS Code provide completion and validation?
-
-To try Copilot, open the generated folder in VS Code with your own GitHub Copilot access. Select a generated prompt and ask it to prepare a filter or explain the identity setup. Review its output before running Azure commands. Interactive Copilot sessions require a licensed account and were not automated in the validation run.
-
-The generated Azure DevOps pipelines are samples in this lab. They are not claimed as executed hosted pipelines. The next lab provides an executable GitHub Actions path for this workshop.
-
-[Next: Hosted workflow](09-hosted-workflow.md)
+[Next: CLI utilities](09-cli-utilities.md)

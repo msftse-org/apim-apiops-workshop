@@ -1,79 +1,78 @@
 # APIM APIOps workshop
 
-Build and manage Azure API Management configuration with the [Azure APIOps CLI](https://github.com/Azure/apiops-cli). Deploy a working Orders API, promote it to QA, change its release, and roll it back. Then explore extraction, dependencies, secrets, scoped deletion, API Center and CI/CD.
+A customer workshop using the **real `apiops` command line**. Customers sign in to their own Azure tenant and subscription, then execute each command themselves. There is no Python deployment wrapper and no Azure deployment connection configured in this repository.
 
-The workshop uses **APIM Consumption** and **API Center Free**. Development and QA are separate API namespaces in one gateway, suitable for a low-cost lab. They do not provide separate security or capacity boundaries. The API serves synthetic data without a subscription key. Keep it out of production.
+Deploy an Orders API to Azure API Management, promote its configuration to QA, change a release and roll it back. Explore extraction, filtering, dependencies, secret redaction, scoped deletion, API Center and pipeline generation.
 
 ## Start here
+
+Requirements: **Node.js 22+, npm, Azure CLI, Git, jq and curl**. Commands use Bash on macOS/Linux or WSL. Configure a Git name/email for the commit exercises. You do not need Python to follow the labs.
 
 ```bash
 git clone https://github.com/msftse-org/apim-apiops-workshop.git
 cd apim-apiops-workshop
-bash scripts/install.sh
-cp config.example.json config.local.json
-# Edit config.local.json with YOUR subscription and globally unique service names.
-az login
-python3 scripts/resources.py plan
-python3 scripts/resources.py provision
-python3 scripts/workshop.py doctor
+export WORKSHOP_ROOT="$PWD"
+npm install -g @azure-tools/apiops-cli@1.0.5
+apiops --version
+cp .env.example .env
+# Edit .env with YOUR tenant, subscription, names and publisher email.
+source .env
+az login --tenant "$TENANT_ID"
+az account set --subscription "$AZURE_SUBSCRIPTION_ID"
+az account show --query '{tenant:tenantId,subscription:id,name:name}' -o table
 ```
 
-Already have the workshop resources? Fill in their names and skip provisioning. Each participant should use their own dedicated resource group or coordinate access with the instructor. Never use these exercises against a shared production gateway.
+Use a dedicated sandbox resource group. Ask your Azure administrator for the privileges needed to create resources and manage their API configuration. If you already have a dedicated APIM and API Center, enter their names and skip resource creation. The labs never require access to the author's Azure environment.
 
-## Exercises
+## Workshop path
 
-| Lab | Outcome | Main utility |
+| Lab | What the customer runs | What to observe |
 |---|---|---|
-| [00. Setup](docs/labs/00-setup.md) | Install the pinned CLI and select your sandbox | `install.sh`, `doctor` |
-| [01. Resources](docs/labs/01-resources.md) | Create or reuse APIM and API Center | `resources.py` |
-| [02. First deployment](docs/labs/02-deploy.md) | Preview and deploy dev + QA, then call the API | `publish --dry-run`, `publish` |
-| [03. Release and rollback](docs/labs/03-release.md) | Change v1 to v2 and restore v1 using Git | `--commit-id`, `git revert` |
-| [04. Environment overrides](docs/labs/04-overrides.md) | Understand names, routes, values and the override-only trap | `--overrides` |
-| [05. Extraction and filters](docs/labs/05-filtering.md) | Extract one API, its dependencies, or a wider baseline | `--filter`, `--no-transitive` |
-| [06. Secrets and deletion](docs/labs/06-guards.md) | Observe redaction, rejection and one scoped DELETE | `--delete-unmatched`, `--remove-stale` |
-| [07. API Center](docs/labs/07-api-center.md) | Back up and replay metadata and OpenAPI definitions | `apic extract`, `apic publish` |
-| [08. CI/CD and Copilot](docs/labs/08-cicd.md) | Generate both pipeline formats and inspect setup prompts | `init`, `--force` |
-| [09. Hosted workflow](docs/labs/09-hosted-workflow.md) | Run validation and optional Azure deployment in GitHub Actions | OIDC workflow |
-| [10. Validation and troubleshooting](docs/labs/10-validation.md) | Execute the complete suite and inspect evidence | `validate-live`, JSON reports |
-| [11. Cleanup](docs/labs/11-cleanup.md) | Review resources and explicitly delete your workshop group | `resources.py cleanup` |
+| [00. CLI and Azure login](docs/labs/00-setup.md) | `npm`, `apiops --help`, `az login` | Correct CLI, tenant and subscription |
+| [01. Azure resources](docs/labs/01-resources.md) | `az group`, `az apim`, `az rest` | APIM Consumption and API Center Free |
+| [02. Deploy dev and QA](docs/labs/02-deploy.md) | `apiops publish`, `--dry-run`, `curl` | Two routes, HTTP 200, environment headers |
+| [03. Change and roll back](docs/labs/03-release.md) | `git commit`, `--commit-id`, `git revert` | Dev v1, v2, v1; QA stays v2 |
+| [04. Environment overrides](docs/labs/04-overrides.md) | `--overrides`, full/incremental publish | Override-only changes need full publish |
+| [05. Extract and filter](docs/labs/05-filtering.md) | `apiops extract`, `--filter`, `--no-transitive` | Dependencies, wildcards and exclusions |
+| [06. Secrets and deletion](docs/labs/06-guards.md) | Secret extraction, `--delete-unmatched`, `--remove-stale` | Redaction, rejection and one scoped DELETE |
+| [07. API Center](docs/labs/07-api-center.md) | `apiops apic extract/publish` | Metadata, specifications and replay |
+| [08. Generate pipelines](docs/labs/08-cicd.md) | `apiops init`, `--force` | GitHub/Azure DevOps scaffolds and Copilot prompts |
+| [09. CLI output and automation](docs/labs/09-cli-utilities.md) | `--help`, `--format json`, `--log-level` | Plans, counts and exit codes |
+| [10. Verify results](docs/labs/10-validation.md) | `curl`, `jq`, artifact inspection | Match the expected outcomes |
+| [11. Cleanup](docs/labs/11-cleanup.md) | `az resource list`, `az group delete` | Remove your own dedicated lab group |
 
-The learning path is estimated at **90–120 minutes**, excluding provisioning and identity setup. This is a planning estimate, not a measured benchmark.
+Estimated workshop time: **90–120 minutes**, excluding provisioning. This is a planning estimate, not a measured benchmark.
 
-## Repeat the demonstrated flow
+## The first real deployment command
 
-```bash
-python3 scripts/workshop.py preview --env dev
-python3 scripts/workshop.py publish --env dev
-python3 scripts/workshop.py publish --env qa
-python3 scripts/workshop.py status
-python3 scripts/workshop.py cycle
-```
-
-`cycle` makes a disposable local Git repository under `.work/`, publishes one changed named value, verifies dev v2, and uses a Git revert to restore dev v1. QA stays on v2. It does not push exercise commits to GitHub.
-
-## Validate the complete workshop
+After setup and provisioning:
 
 ```bash
-python3 scripts/validate.py             # Offline artifact and documentation checks
-python3 scripts/workshop.py validate-live  # Writes to your configured Azure lab
+apiops publish \
+  --subscription-id "$AZURE_SUBSCRIPTION_ID" \
+  --resource-group "$RESOURCE_GROUP" \
+  --service-name "$APIM_NAME" \
+  --source apim-artifacts \
+  --overrides configuration.dev.yaml \
+  --dry-run
 ```
 
-The live suite executes the main workshop commands and assertions. It leaves dev v1 and QA v2 deployed. Logs and target configuration stay in ignored local files. Read [validation results](validation/README.md) for what was actually run, the test date, and remaining coverage limits.
+Remove `--dry-run` to apply the configuration. Every subsequent lab shows its actual CLI flags and expected results.
 
-## Repository map
+## Files
 
-- `apim-artifacts/`: canonical API definitions, policies, backend, named values, product and tag.
-- `apic-artifacts/`: API Center catalog example and OpenAPI definition.
-- `configuration.*.yaml`: dev/QA overrides using canonical resource names.
-- `filter.*.yaml`: explicit filtering of all supported top-level types.
-- `scripts/`: install, provision, exercise, verify and cleanup utilities.
-- `docs/labs/`: step-by-step instructions with expected outcomes.
-- `docs/presentation/`: Microsoft-themed workshop presentation.
-- `validation/`: sanitized results and scope statements.
-- `.work/`: generated pipelines, snapshots, Git exercises and raw logs (ignored).
+- `apim-artifacts/` and `apic-artifacts/`: canonical configuration and specifications.
+- `configuration.dev.yaml` / `configuration.qa.yaml`: environment overrides.
+- `filter.*.yaml` and `examples/`: explicit filters and disposable fixtures.
+- `docs/labs/`: customer commands and explanations.
+- `docs/presentation/`: Microsoft-themed PowerPoint and workshop links.
+- `validation/`: sanitized measured results and coverage.
+- `.env` and `.work/`: your local configuration and outputs, excluded from Git.
 
-## Version and scope
+The repository's GitHub Actions workflow performs **offline content checks only**. Generated deployment pipeline examples stay in your local `.work/` directory. Connecting them to Azure is a separate customer-owned decision.
 
-The CLI is built from **1.0.5**, commit [`129fb326`](https://github.com/Azure/apiops-cli/tree/129fb326e6878c2bedd45e8ae4ccb8526de688a4). Installation uses `npm ci` against its lockfile. This pin makes the exercises repeatable, but does not certify the upstream dependency tree as secure. Review current advisories before production use. See [coverage and limitations](docs/coverage.md) and [official sources](docs/sources.md).
+## Scope
 
-APIOps means API configuration as code here. The repository also supplies Copilot prompts to assist setup. This workshop does not demonstrate AI model hosting or autonomous incident remediation.
+The lab uses APIM Consumption and API Center Free. Dev and QA are namespaces in one gateway, not isolated security/capacity boundaries. The sample API returns synthetic data without subscription authentication. Consumption usage may incur charges.
+
+CLI package version: **1.0.5**. See [validation](validation/README.md), [coverage](docs/coverage.md) and [official sources](docs/sources.md). The workshop covers all top-level CLI command families, not every resource type, APIM tier or option combination. APIOps here means API configuration as code; it does not operate an AI model service.

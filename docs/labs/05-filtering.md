@@ -1,23 +1,60 @@
-# Lab 05: Extraction, filters and dependencies
+# Lab 05: Extraction, filters and dependency expansion
 
-**Outcome:** explain why extracting one API can include referenced resources.
+**Outcome:** inspect full configuration, select resources, and compare dependency expansion.
 
 ```bash
-python3 scripts/workshop.py extract
-python3 scripts/workshop.py extract --no-transitive
-python3 scripts/workshop.py extract --full
-python3 scripts/workshop.py preview --filter
-python3 scripts/workshop.py publish --filter
+apiops extract \
+  --subscription-id "$AZURE_SUBSCRIPTION_ID" \
+  --resource-group "$RESOURCE_GROUP" \
+  --service-name "$APIM_NAME" \
+  --output .work/extract-dependencies --filter filter.dev-strict.yaml --format json > .work/extract-dependencies.json
+
+apiops extract \
+  --subscription-id "$AZURE_SUBSCRIPTION_ID" \
+  --resource-group "$RESOURCE_GROUP" \
+  --service-name "$APIM_NAME" \
+  --output .work/extract-exact --filter filter.dev-strict.yaml --no-transitive --format json > .work/extract-exact.json
+jq '.summary.totalExtracted' .work/extract-dependencies.json .work/extract-exact.json
+
+apiops extract \
+  --subscription-id "$AZURE_SUBSCRIPTION_ID" \
+  --resource-group "$RESOURCE_GROUP" \
+  --service-name "$APIM_NAME" \
+  --output .work/extract-full
 ```
 
-1. Compare `.work/extract-dependencies/` and `.work/extract-exact/`.
-2. The API references a backend and policy fragment; the fragment references named values. Dependency expansion includes these when enabled.
-3. Inspect `filter.dev-strict.yaml`. It selects the deployed `dev-demo-orders` name. Every unrelated type is explicitly `[]`.
-4. Inspect `filter.orders-strict.yaml`. Publishing matches canonical artifact names, so it selects `demo-orders` and explicitly includes the tag needed by the API association.
-5. Review the full snapshot in `.work/extract-full/`. It represents the configured service, not a portable production backup guarantee.
+Dependency expansion includes the backend, fragment and named values referenced by the API. The exact extraction contains fewer resources. Compare the directories.
 
-**Important:** omitted top-level filter keys mean “include all” for that type. A short `apis: [my-api]` file alone does not constrain the whole extraction to only that API. `--no-transitive` turns off dependency expansion; the destination must already contain required dependencies if you publish that subset.
+An omitted filter type means “include all” for that type. Our filters explicitly list all 17 keys and use `[]` for unrelated types. Extract filters match deployed names (`dev-demo-orders`); publish filters match canonical artifact names (`demo-orders`).
 
-The complete suite also creates a filter selecting `dev-*` named values while excluding `!dev-demo-release`. It asserts that the environment value is present and the release value is absent. Quotes around exclusions avoid YAML ambiguity. Nested API/workspace filters are documented upstream but not part of the live Consumption exercises.
+Preview and publish the filtered canonical subset:
+
+```bash
+apiops publish \
+  --subscription-id "$AZURE_SUBSCRIPTION_ID" \
+  --resource-group "$RESOURCE_GROUP" \
+  --service-name "$APIM_NAME" \
+  --source apim-artifacts --overrides configuration.dev.yaml --filter filter.orders-strict.yaml --dry-run
+apiops publish \
+  --subscription-id "$AZURE_SUBSCRIPTION_ID" \
+  --resource-group "$RESOURCE_GROUP" \
+  --service-name "$APIM_NAME" \
+  --source apim-artifacts --overrides configuration.dev.yaml --filter filter.orders-strict.yaml
+```
+
+The tag is explicitly included so the API association can resolve. `--no-transitive` can also be used with publish, but required dependencies must already exist.
+
+Try wildcard selection and exclusion:
+
+```bash
+apiops extract \
+  --subscription-id "$AZURE_SUBSCRIPTION_ID" \
+  --resource-group "$RESOURCE_GROUP" \
+  --service-name "$APIM_NAME" \
+  --output .work/extract-patterns --filter examples/filter.patterns.yaml
+find .work/extract-patterns -name namedValueInformation.json
+```
+
+Expected: `dev-demo-environment` is present and `dev-demo-release` is absent. The filter selects `dev-*` and excludes `!dev-demo-release`. Exclusions are quoted to avoid YAML ambiguity.
 
 [Next: Secrets and deletion](06-guards.md)
